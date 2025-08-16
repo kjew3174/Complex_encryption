@@ -1,32 +1,23 @@
-
+# crypto/decoder.py
 from typing import List
 from .utils import round_complex
 
-# 복소수 진법을 10진법으로 변환
-def decode_from_base_z(digits: List[int], base: complex) -> complex:
+__all__ = ["decode_from_base_z", "decode_all", "merge_blocks_to_bytes"]
 
-    value = 0 + 0j
-    power = 1 + 0j
-    for digit in digits:
-        value += digit * power
-        power *= base
-    return round_complex(value, 10)
+def decode_from_base_z(encoded_block: complex, base: complex) -> complex:
+    """복소수 진법 블록을 원래 복소수 블록으로 변환"""
+    return round_complex(encoded_block / base)
 
-# 복소수 블록들을 바이트로 복원
 def merge_blocks_to_bytes(blocks: List[complex]) -> bytes:
-
-    byte_array = bytearray()
+    """복소수 블록을 바이트 단위로 변환"""
+    data = []
     for block in blocks:
-        high = int(round(block.real)) & 0xF
-        low = int(round(block.imag)) & 0xF
-        byte_array.append((high << 4) | low)
-    return bytes(byte_array)
+        high = int(block.real) & 0xF
+        low = int(block.imag) & 0xF
+        data.append((high << 4) | low)
+    return bytes(data)
 
-# 전체 암호화 데이터 복원
-def decode_all(encoded_data: List[List[int]], base: complex) -> bytes:
-
-    blocks = []
-    for digits in encoded_data:
-        z = decode_from_base_z(digits, base)
-        blocks.append(z)
+def decode_all(encoded_data: List[complex], base: complex) -> bytes:
+    """전체 암호화 데이터 복원"""
+    blocks = [decode_from_base_z(b, base) for b in encoded_data]
     return merge_blocks_to_bytes(blocks)
