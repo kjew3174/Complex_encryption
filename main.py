@@ -18,7 +18,7 @@ def main():
 
     # 랜덤 키 생성
     base = generate_random_complex_base()
-    print("사용 키:", base)
+    print("사용 키: ", base[0], "+", base[1], "i")
 
     # 암호화
     encoded_data = encoder.encode_blocks(blocks, base)
@@ -27,12 +27,12 @@ def main():
 
     # 복호화
     loaded_encoded = io_utils.read_encrypted_file(encrypted_path)
-    decrypted_data = decoder.decode_all(loaded_encoded, base)
-    io_utils.write_text_file(decrypted_path, decrypted_data)
+    decrypted_data = decoder.decode_blocks(loaded_encoded, base)
+    io_utils.write_text_file(decrypted_path, decoder.merge_blocks_to_bytes(decrypted_data))
     print("복호화 결과 저장 완료:", decrypted_path)
 
     # 검증
-    if data == decrypted_data:
+    if blocks == decrypted_data:
         print("복호화 성공: 원본과 일치")
     else:
         print("복호화 실패: 원본과 다름")
